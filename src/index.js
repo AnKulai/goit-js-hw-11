@@ -23,10 +23,12 @@ const pixabayAPI = new PixabayAPI();
 // Determining the request type
 
 const getPictures = event => {
-  const targetName = event.target.innerHTML;
+  const targetName = event.target.dataset.targetName;
   event.preventDefault();
-  if (targetName === 'Search') {
+  if (targetName === 'search') {
     getInputValue();
+    if (pixabayAPI.query.length === 0)
+      return Notiflix.Notify.warning(`Field is empty! Try again!`);
     galleryEl.clear();
     searchFormEl.clear();
     pictureRequest();
@@ -39,50 +41,55 @@ const getPictures = event => {
 
 // Get pictures from pixabay DataBase (first or new request)
 
-const pictureRequest = () =>
-  pixabayAPI.pictureFetch().then(({ data: { hits, totalHits } }) => {
-    hits.length != 0
-      ? renderPictureCard(hits)
-      : Notiflix.Notify.warning(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-    if (pixabayAPI.page >= totalHits / 42) {
-      loadMoreBtnEl.hide();
-    }
-    lightbox.refresh();
-  });
+const pictureRequest = async () => {
+  const {
+    data: { hits, totalHits },
+  } = await pixabayAPI.pictureFetch();
+  hits.length != 0
+    ? renderPictureCard(hits)
+    : Notiflix.Notify.warning(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+  if (pixabayAPI.page >= totalHits / pixabayAPI.per_page) {
+    loadMoreBtnEl.hide();
+  }
+  lightbox.refresh();
+};
 
 // Get pictures from pixabay DataBase (next request)
 
-const morePictureRequest = () =>
-  pixabayAPI.onLoadMore().then(({ data: { hits, totalHits } }) => {
-    Notiflix.Notify.info(`Hooray! We found ${totalHits} images.`);
-    if (hits.length > 0) {
-      renderPictureCard(hits);
-    }
-    if (pixabayAPI.page >= totalHits / 42) {
-      Notiflix.Notify.warning(
-        `We're sorry, but you've reached the end of search results.`
-      );
-      loadMoreBtnEl.hide();
-    }
-    smoothScroll();
-    lightbox.refresh();
-  });
+const morePictureRequest = async () => {
+  const {
+    data: { hits, totalHits },
+  } = await pixabayAPI.onLoadMore();
+
+  Notiflix.Notify.info(`Hooray! We found ${totalHits} images.`);
+  if (hits.length > 0) {
+    renderPictureCard(hits);
+  }
+  if (pixabayAPI.page >= totalHits / pixabayAPI.per_page) {
+    Notiflix.Notify.warning(
+      `We're sorry, but you've reached the end of search results.`
+    );
+    loadMoreBtnEl.hide();
+  }
+  smoothScroll();
+  lightbox.refresh();
+};
 
 // Get value from input fileds and paste 'panda' if field is empty
 
 const getInputValue = () => {
   const value =
     document.querySelector(`.search-form`).elements.searchQuery.value;
-  if (value.length === 0) {
-    Notiflix.Notify.warning(
-      `Sorry, I don't know what "emptiness" looks like, better take a look at pandas.`
-    );
-    pixabayAPI.query = `panda`;
-  } else {
-    pixabayAPI.query = value;
-  }
+  // if (value.length === 0) {
+  //   Notiflix.Notify.warning(
+  //     `Sorry, I don't know what "emptiness" looks like, better take a look at pandas.`
+  //   );
+  //   pixabayAPI.query = `panda`;
+  // } else {
+  pixabayAPI.query = value;
+  // }
 };
 
 // Realized infinite scroll (additional task)
@@ -110,4 +117,4 @@ loadMoreBtnEl.element.addEventListener(`click`, getPictures);
 
 // infiniteScroll listener (Delete or comment out as needed)
 
-window.addEventListener(`scroll`, throttle(infiniteScroll, DEBOUNCE_DELAY));
+// window.addEventListener(`scroll`, throttle(infiniteScroll, DEBOUNCE_DELAY));

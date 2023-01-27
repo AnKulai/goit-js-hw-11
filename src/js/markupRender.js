@@ -1,18 +1,24 @@
+import { update } from 'lodash';
+
+let galleryCards = null;
+
+// Update markup sample
+
+const udpdateGalleryCards = data => (galleryCards = createGallaryCards(data));
 // Render markup
 
 export const renderPictureCard = data => {
   const gallery = document.querySelector(`.gallery`);
-  return (gallery.innerHTML += data
+  udpdateGalleryCards(data);
+  gallery.insertAdjacentHTML(`beforeend`, galleryCards);
+};
+
+// Create markup sample
+
+const createGallaryCards = data => {
+  return data
     .map(
-      ({
-        webformatURL,
-        largeImageURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => {
+      ({ webformatURL, largeImageURL, likes, views, comments, downloads }) => {
         return `
         <a href="${largeImageURL}">
           <div class="photo-card">
@@ -36,5 +42,5 @@ export const renderPictureCard = data => {
       `;
       }
     )
-    .join(''));
+    .join('');
 };

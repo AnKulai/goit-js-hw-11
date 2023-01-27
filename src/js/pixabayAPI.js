@@ -5,6 +5,7 @@ export class PixabayAPI {
 
   constructor() {
     this.page = 1;
+    this.per_page = 42;
     this.query = null;
   }
 
@@ -17,7 +18,7 @@ export class PixabayAPI {
         image_type: `photo`,
         orientation: `horizontal`,
         safesearch: true,
-        per_page: 42,
+        per_page: this.per_page,
       },
     };
     return await axios.get(`${PixabayAPI.BASE_URL}`, searchParams);
@@ -32,7 +33,7 @@ export class PixabayAPI {
         image_type: `photo`,
         orientation: `horizontal`,
         safesearch: true,
-        per_page: 42,
+        per_page: this.per_page,
         page: this.page,
       },
     };
